@@ -93,7 +93,7 @@ CommandRegistry::CommandRegistry(Database& db) : database_(db) {
     add("бонус", [this](const Message& message, const auto&) {
         const auto amount = database_.daily_bonus(message.from_id, 500);
         return Reply{amount ? "🎁 Ежедневный бонус: +" + std::to_string(amount) + " монет!"
-                            : "⏳ Ежедневный бонус уже получен. Возвращайся завтра."};
+                            : "⏳ Бонус уже получен сегодня или баланс достиг предела."};
     });
     add("ежедневный", [this](const Message& message, const auto& args) {
         return commands_.at("бонус")(message, args);
@@ -102,7 +102,8 @@ CommandRegistry::CommandRegistry(Database& db) : database_(db) {
         return commands_.at("бонус")(message, args);
     });
     add("работа", [this](const Message& message, const auto&) {
-        database_.work(message.from_id, 250);
+        if (!database_.work(message.from_id, 250))
+            return Reply{"⚠️ Не удалось завершить смену: проверь состояние игрового счёта."};
         return Reply{"🧰 Смена завершена: +250 монет и +2 опыта."};
     });
     add("work", [this](const Message& message, const auto& args) {
