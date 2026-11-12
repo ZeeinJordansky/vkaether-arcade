@@ -429,8 +429,8 @@ CommandRegistry::CommandRegistry(Database& db) : database_(db) {
             return Reply{"❌ Основание должно быть целым, показатель — от 0 до 63."};
         long double result = 1;
         for (std::int64_t i = 0; i < exponent; ++i) result *= static_cast<long double>(base);
-        if (!std::isfinite(result) || result > static_cast<long double>(std::numeric_limits<std::int64_t>::max()) ||
-            result < static_cast<long double>(std::numeric_limits<std::int64_t>::min()))
+        const long double signed_limit = std::ldexp(1.0L, 63);
+        if (!std::isfinite(result) || result >= signed_limit || result < -signed_limit)
             return Reply{"❌ Результат выходит за диапазон 64-битного целого числа."};
         std::ostringstream out;
         out << "🔢 " << base << "^" << exponent << " = " << static_cast<std::int64_t>(result);
