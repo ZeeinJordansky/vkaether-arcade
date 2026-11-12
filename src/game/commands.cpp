@@ -1,4 +1,7 @@
 #include "vkaether/commands.hpp"
+#include "lua_runtime.hpp"
+
+#include <limits>
 
 #include <algorithm>
 #include <charconv>
@@ -9,6 +12,8 @@
 #include <sstream>
 #include <string_view>
 #include <utility>
+
+extern "C" int vkaether_rust_add(std::int64_t a, std::int64_t b, std::int64_t* out);
 
 namespace vkaether {
 namespace {
@@ -309,6 +314,34 @@ CommandRegistry::CommandRegistry(Database& db) : database_(db) {
     add_random("атака", {"⚔️ Сильная атака: цель отброшена!", "⚔️ Быстрый удар достиг цели.", "⚔️ Противник увернулся."});
     add("рандом", [](const Message&, const auto&) {
         return Reply{"🎲 Случайное число: " + std::to_string(random_int(1, 100))};
+    });
+
+    // Rust is used for the checked arithmetic primitive through a stable C ABI.
+    add("rsum", [](const Message&, const auto& args) {
+        if (args.size() != 2) return Reply{"Использование: rsum число1 число2"};
+        std::int64_t a{}, b{};
+        const auto parse = [](const std::string& value, std::int64_t& output) {
+            const auto [end, error] = std::from_chars(value.data(), value.data() + value.size(), output);
+            return error == std::errc{} && end == value.data() + value.size();
+        };
+        if (!parse(args[0], a) || !parse(args[1], b))
+            return Reply{"❌ Укажи два целых числа."};
+        std::int64_t result{};
+        const int status = vkaether_rust_add(a, b, &result);
+        if (status == 2) return Reply{"❌ Rust: переполнение 64-битного целого числа."};
+        if (status != 0) return Reply{"⚠️ Rust-модуль вернул ошибку."};
+        return Reply{"🦀 Rust sum: " + std::to_string(result)};
+    });
+
+    // Lua provides a small, sandboxed scripting surface for custom expressions.
+    add("lua", [](const Message&, const auto& args) {
+        if (args.empty()) return Reply{"Использование: lua return 6 * 7"};
+        std::string source;
+        for (const auto& part : args) {
+            if (!source.empty()) source += ' ';
+            source += part;
+        }
+        return Reply{"🌙 Lua: " + execute_lua(source)};
     });
 
 
