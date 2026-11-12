@@ -210,10 +210,15 @@ CommandRegistry::CommandRegistry(Database& db) : database_(db) {
         std::int64_t a{}, b{};
         if (!parse_int(args[0], a) || !parse_int(args[1], b))
             return Reply{"❌ Укажи два целых числа."};
-        if (a != 0 && (a == -1 ? b == std::numeric_limits<std::int64_t>::min() :
-            b > std::numeric_limits<std::int64_t>::max() / a ||
-            b < std::numeric_limits<std::int64_t>::min() / a))
-            return Reply{"❌ Результат выходит за диапазон 64-битного целого числа."};
+        bool overflow = false;
+        if (a > 0) {
+            overflow = b > 0 ? a > std::numeric_limits<std::int64_t>::max() / b
+                             : b < std::numeric_limits<std::int64_t>::min() / a;
+        } else if (a < 0) {
+            overflow = b > 0 ? a < std::numeric_limits<std::int64_t>::min() / b
+                             : (b < 0 && a < std::numeric_limits<std::int64_t>::max() / b);
+        }
+        if (overflow) return Reply{"❌ Результат выходит за диапазон 64-битного целого числа."};
         return Reply{"✖️ Результат: " + std::to_string(a * b)};
     });
     add("квадрат", [](const Message&, const auto& args) {
@@ -300,8 +305,9 @@ CommandRegistry::CommandRegistry(Database& db) : database_(db) {
     add_random("крит", {"💥 Критический удар! Урон x2.", "⚔️ Обычная атака — без критического эффекта.", "✨ Критический шанс сработал!"});
     add_random("защита", {"🛡️ Блок успешен: урон предотвращён.", "🛡️ Щит выдержал удар.", "🛡️ Защита пробита — отступи!"});
     add_random("атака", {"⚔️ Сильная атака: цель отброшена!", "⚔️ Быстрый удар достиг цели.", "⚔️ Противник увернулся."});
-    add_random("рандом", {"🎲 " + std::to_string(random_int(1, 100)), "🎲 " + std::to_string(random_int(1, 100)),
-                           "🎲 " + std::to_string(random_int(1, 100))});
+    add("рандом", [](const Message&, const auto&) {
+        return Reply{"🎲 Случайное число: " + std::to_string(random_int(1, 100))};
+    });
 
     // English aliases intentionally point to the same real handlers.
     add("profile", [this](const Message& m, const auto& a) { return commands_.at("профиль")(m, a); });
