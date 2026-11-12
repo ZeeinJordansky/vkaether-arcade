@@ -1,4 +1,5 @@
 #include "vkaether/logger.hpp"
+#include <chrono>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -12,5 +13,5 @@ localtime_s(&tm,&now);
 #else
 localtime_r(&now,&tm);
 #endif
-std::cerr<<std::put_time(&tm,"%F %T")<<" ["<<name(l)<<"] "<<msg<<'\\n';}catch(...){}}
+std::cerr<<std::put_time(&tm,"%F %T")<<" ["<<name(l)<<"] "<<msg<<'\n';}catch(...){}}
 }
