@@ -182,7 +182,7 @@ void CommandRegistry::register_extended_commands() {
         bool prime = n >= 2;
         for (std::int64_t divisor = 2; prime && divisor <= n / divisor; ++divisor)
             if (n % divisor == 0) prime = false;
-        return Reply{prime ? "✅ Число простое." : "❌ Число составное или меньше двух."};
+        return Reply{prime ? "✅ Число простое." : "❌ Число не является простым."};
     });
     add("четное", [](const Message&, const auto& args) {
         if (args.size() != 1) return Reply{"Использование: четное [число]"};
@@ -264,8 +264,6 @@ void CommandRegistry::register_extended_commands() {
                             "🌠 Событие: метеоритный дождь над долиной",
                             "🎭 Событие: маскарад в королевском дворце",
                             "🏁 Событие: гонка воздушных кораблей"});
-    add_choice("погодаигра", {"🌤 Игровая погода: ясное небо", "🌧 Игровая погода: тёплый дождь",
-                               "🌨 Игровая погода: снежная метель", "🌫 Игровая погода: густой туман"});
 
 
 }
