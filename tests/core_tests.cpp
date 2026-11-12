@@ -55,6 +55,11 @@ int main() {
         require(commands.dispatch({1, 42, "переверни \"Привет мир\""}).text.find("рим тевирП") != std::string::npos,
                 "UTF-8 text reversal failed");
 
+        require(database.work(44, 250), "valid work shift failed");
+        require(database.get_user(44).balance == 1250, "work reward was not credited");
+        require(!database.work(44, -1), "negative work reward was accepted");
+        require(!database.transfer(44, 44, 1), "self-transfer was accepted");
+
         require(database.daily_bonus(42, 500) == 500, "first daily bonus was not granted");
         require(database.daily_bonus(42, 500) == 0, "duplicate daily bonus was granted");
         require(database.transfer(42, 43, 100), "valid transfer failed");
