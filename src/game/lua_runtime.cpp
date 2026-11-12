@@ -2,12 +2,40 @@
 
 #include <lua.hpp>
 
+#include <cstdlib>
 #include <string>
 
 namespace vkaether {
+namespace {
+
+struct LuaMemory {
+    std::size_t used{};
+    static constexpr std::size_t limit = 1024 * 1024;
+};
+
+void* limited_allocator(void* user_data, void* pointer, std::size_t old_size, std::size_t new_size) {
+    auto& memory = *static_cast<LuaMemory*>(user_data);
+    if (new_size == 0) {
+        if (pointer) { memory.used -= old_size; std::free(pointer); }
+        return nullptr;
+    }
+    const std::size_t accounted_old = pointer ? old_size : 0;
+    if (new_size > accounted_old && new_size - accounted_old > LuaMemory::limit - memory.used)
+        return nullptr;
+    void* replacement = std::realloc(pointer, new_size);
+    if (replacement) memory.used = memory.used - accounted_old + new_size;
+    return replacement;
+}
+
+void instruction_limit(lua_State* state, lua_Debug*) {
+    luaL_error(state, "instruction limit exceeded");
+}
+
+} // namespace
 
 std::string execute_lua(std::string_view source) {
-    lua_State* state = luaL_newstate();
+    LuaMemory memory;
+    lua_State* state = lua_newstate(limited_allocator, &memory);
     if (!state) {
         return "Lua: не удалось создать состояние.";
     }
@@ -28,6 +56,9 @@ std::string execute_lua(std::string_view source) {
     lua_pushnil(state); lua_setglobal(state, "dofile");
     lua_pushnil(state); lua_setglobal(state, "loadfile");
     lua_pushnil(state); lua_setglobal(state, "load");
+
+    // Bound CPU use so scripts cannot stall a worker indefinitely.
+    lua_sethook(state, instruction_limit, LUA_MASKCOUNT, 100000);
 
     const std::string script(source);
     if (luaL_loadbuffer(state, script.data(), script.size(), "vk-command") != LUA_OK) {
