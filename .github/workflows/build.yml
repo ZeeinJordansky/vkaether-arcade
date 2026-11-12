@@ -13,6 +13,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y cmake ninja-build libcurl4-openssl-dev libsqlite3-dev liblua5.4-dev
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+      - name: Test Rust module
+        run: cargo test --manifest-path rust/Cargo.toml --release
       - name: Configure
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
       - name: Build
