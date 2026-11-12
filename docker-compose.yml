@@ -1,0 +1,10 @@
+services:
+  bot:
+    build: .
+    restart: unless-stopped
+    init: true
+    cpus: "2.0"
+    mem_limit: 2g
+    volumes:
+      - ./config.json:/app/config.json:ro
+      - ./data:/app/data
