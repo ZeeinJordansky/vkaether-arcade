@@ -1,5 +1,28 @@
 cmake_minimum_required(VERSION 3.24)
-project(vkaether_arcade VERSION 0.2.0 LANGUAGES CXX)
+project(vkaether_arcade VERSION 0.3.0 LANGUAGES CXX)
+
+include(ExternalProject)
+find_package(Lua 5.4 REQUIRED)
+find_program(CARGO_EXECUTABLE cargo REQUIRED)
+
+set(RUST_TARGET_DIR "${CMAKE_BINARY_DIR}/cargo-target")
+if(MSVC)
+  set(RUST_STATIC_LIBRARY "${RUST_TARGET_DIR}/release/vkaether_rust.lib")
+else()
+  set(RUST_STATIC_LIBRARY "${RUST_TARGET_DIR}/release/libvkaether_rust.a")
+endif()
+
+ExternalProject_Add(vkaether_rust_build
+  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/rust"
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND "${CARGO_EXECUTABLE}" build --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/rust/Cargo.toml" --release --target-dir "${RUST_TARGET_DIR}"
+  INSTALL_COMMAND ""
+  BUILD_BYPRODUCTS "${RUST_STATIC_LIBRARY}"
+  UPDATE_COMMAND ""
+)
+add_library(vkaether_rust STATIC IMPORTED GLOBAL)
+set_target_properties(vkaether_rust PROPERTIES IMPORTED_LOCATION "${RUST_STATIC_LIBRARY}")
+add_dependencies(vkaether_rust vkaether_rust_build)
 option(VKAETHER_BUILD_TESTS "Build tests" ON)
 option(VKAETHER_ENABLE_LTO "Enable LTO in Release" ON)
 set(CMAKE_CXX_STANDARD 20)
@@ -10,9 +33,12 @@ find_package(CURL REQUIRED)
 find_package(SQLite3 REQUIRED)
 FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
 FetchContent_MakeAvailable(json)
-add_library(vkaether_core src/core/config.cpp src/core/logger.cpp src/core/thread_pool.cpp src/game/database.cpp src/game/commands.cpp src/game/commands_extra.cpp src/vk/api.cpp src/vk/long_poll.cpp src/bot.cpp)
-target_include_directories(vkaether_core PUBLIC include)
-target_link_libraries(vkaether_core PUBLIC CURL::libcurl SQLite::SQLite3 nlohmann_json::nlohmann_json)
+add_library(vkaether_core src/core/config.cpp src/core/logger.cpp src/core/thread_pool.cpp src/game/database.cpp src/game/commands.cpp src/game/commands_extra.cpp src/game/lua_runtime.cpp src/vk/api.cpp src/vk/long_poll.cpp src/bot.cpp)
+target_include_directories(vkaether_core PUBLIC include PRIVATE ${LUA_INCLUDE_DIR})
+target_link_libraries(vkaether_core PUBLIC CURL::libcurl SQLite::SQLite3 nlohmann_json::nlohmann_json ${LUA_LIBRARIES} vkaether_rust)
+if(UNIX AND NOT APPLE)
+  target_link_libraries(vkaether_core PUBLIC dl m)
+endif()
 if(MSVC)
   target_compile_options(vkaether_core PRIVATE /W4 /permissive- /O2)
 else()
