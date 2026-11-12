@@ -1,8 +1,6 @@
 #include "vkaether/commands.hpp"
 #include "lua_runtime.hpp"
 
-#include <limits>
-
 #include <algorithm>
 #include <charconv>
 #include <cmath>
@@ -362,7 +360,7 @@ CommandRegistry::CommandRegistry(Database& db) : database_(db) {
     add("ping", [](const Message&, const auto&) { return Reply{"🏓 pong"}; });
     add("online", [](const Message&, const auto&) { return Reply{"🟢 VK Long Poll подключён."}; });
     add("пинг", [](const Message&, const auto&) { return Reply{"🏓 pong"}; });
-    add("версия", [](const Message&, const auto&) { return Reply{"Aether Arcade 0.2.0 (C++20)"}; });
+    add("версия", [](const Message&, const auto&) { return Reply{"Aether Arcade 0.3.0 (C++20 + Rust + Lua)"}; });
     add("правила", [](const Message&, const auto&) { return Reply{"📜 Играй честно, уважай других участников и не используй уязвимости."}; });
     add("rules", [](const Message&, const auto&) { return Reply{"📜 Play fair and respect other players."}; });
 }
