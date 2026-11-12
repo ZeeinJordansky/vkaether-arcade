@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(vkaether_arcade VERSION 0.1.0 LANGUAGES CXX)
+project(vkaether_arcade VERSION 0.2.0 LANGUAGES CXX)
 option(VKAETHER_BUILD_TESTS "Build tests" ON)
 option(VKAETHER_ENABLE_LTO "Enable LTO in Release" ON)
 set(CMAKE_CXX_STANDARD 20)
