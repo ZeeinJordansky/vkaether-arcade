@@ -44,7 +44,7 @@ std::string join(const std::vector<std::string>& values, std::string_view separa
 void CommandRegistry::register_extended_commands() {
     // 50 additional commands. These are self-contained mini-games and utilities;
     // none of them claim to mutate a player's balance or persistent inventory.
-    const add_choice = [this](const char* name, std::vector<std::string> options) {
+    const auto add_choice = [this](const char* name, std::vector<std::string> options) {
         add(name, [options = std::move(options)](const Message&, const auto&) {
             const auto index = static_cast<std::size_t>(random_int(0, static_cast<int>(options.size() - 1)));
             return Reply{options[index]};
