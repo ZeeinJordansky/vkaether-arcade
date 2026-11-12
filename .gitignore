@@ -1,0 +1,8 @@
+/build/
+/cmake-build-*/
+*.db
+*.db-shm
+*.db-wal
+.env
+config.json
+logs/
