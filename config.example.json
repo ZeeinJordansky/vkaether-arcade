@@ -1,0 +1,8 @@
+{
+  "vk_token": "PUT_VK_COMMUNITY_TOKEN_HERE",
+  "group_id": 0,
+  "api_version": "5.199",
+  "database_path": "data/vkaether.sqlite3",
+  "worker_threads": 0,
+  "log_level": "info"
+}
