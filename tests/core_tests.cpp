@@ -35,7 +35,7 @@ int main() {
         assert(commands.dispatch({1, 42, "остаток -9223372036854775808 -1"}).text.find("0") != std::string::npos);
         assert(commands.dispatch({1, 42, "факториал 20"}).text.find("2432902008176640000") != std::string::npos);
         assert(commands.dispatch({1, 42, "простое 97"}).text.find("простое") != std::string::npos);
-        assert(commands.dispatch({1, 42, "умножить 9223372036854775807 2"}).text.find("переполнения") != std::string::npos);
+        assert(commands.dispatch({1, 42, "умножить 9223372036854775807 2"}).text.find("диапазон") != std::string::npos);
         assert(commands.dispatch({1, 42, "число -2147483649 10"}).text.find("Использование") != std::string::npos);
         assert(commands.dispatch({1, 42, "переверни \"Привет мир\""}).text.find("рим тевирП") != std::string::npos);
 
