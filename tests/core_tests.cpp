@@ -25,6 +25,15 @@ int main() {
         require(commands.dispatch({1, 42, "помощь"}).text.find("Aether Arcade") != std::string::npos,
                 "help command did not return expected output");
 
+        require(commands.dispatch({1, 42, "rsum 20 22"}).text.find("42") != std::string::npos,
+                "Rust FFI addition failed");
+        require(commands.dispatch({1, 42, "rsum 9223372036854775807 1"}).text.find("переполнение") != std::string::npos,
+                "Rust FFI overflow was not rejected");
+        require(commands.dispatch({1, 42, "lua return 6 * 7"}).text.find("42") != std::string::npos,
+                "Lua expression execution failed");
+        require(commands.dispatch({1, 42, "lua return os.execute('id')"}).text.find("ошибка") != std::string::npos,
+                "Lua sandbox exposed OS facilities");
+
         // Every one of the 50 newly added commands must be registered and executable.
         const std::vector<std::string> added{
             "орёл", "решка", "бросок", "кости", "d4", "d6", "d8", "d10", "d12", "d20", "d100",
