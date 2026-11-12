@@ -5,14 +5,6 @@
 #include <string>
 
 namespace vkaether {
-namespace {
-
-int lua_error(lua_State* state) {
-    const char* message = lua_tostring(state, -1);
-    return luaL_error(state, "%s", message ? message : "unknown Lua error");
-}
-
-} // namespace
 
 std::string execute_lua(std::string_view source) {
     lua_State* state = luaL_newstate();
