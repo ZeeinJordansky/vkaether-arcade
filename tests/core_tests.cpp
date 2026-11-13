@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include <filesystem>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -32,9 +33,9 @@ int main() {
         require(vkaether_rust_rps(9, 0) == -1, "Rust RPS accepted invalid choice");
         std::int64_t rust_value{};
         require(vkaether_rust_mul(6, 7, &rust_value) == 0 && rust_value == 42, "Rust checked multiplication failed");
-        require(vkaether_rust_mul(INT64_MAX, 2, &rust_value) == 2, "Rust multiplication overflow was not rejected");
+        require(vkaether_rust_mul(std::numeric_limits<std::int64_t>::max(), 2, &rust_value) == 2, "Rust multiplication overflow was not rejected");
         require(vkaether_rust_div(10, 0, &rust_value) == 2, "Rust division by zero was not rejected");
-        require(vkaether_rust_div(INT64_MIN, -1, &rust_value) == 3, "Rust division overflow was not rejected");
+        require(vkaether_rust_div(std::numeric_limits<std::int64_t>::min(), -1, &rust_value) == 3, "Rust division overflow was not rejected");
         require(vkaether_rust_pow(3, 4, &rust_value) == 0 && rust_value == 81, "Rust checked power failed");
         std::uint64_t rust_factorial{};
         require(vkaether_rust_factorial(20, &rust_factorial) == 0 && rust_factorial == 2432902008176640000ULL, "Rust factorial failed");
