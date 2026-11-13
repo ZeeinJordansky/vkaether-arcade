@@ -11,6 +11,7 @@
 #include <utility>
 
 extern "C" int vkaether_rust_add(std::int64_t a, std::int64_t b, std::int64_t* out);
+extern "C" int vkaether_rust_rps(int player, int bot);
 
 namespace vkaether {
 namespace {
@@ -155,8 +156,9 @@ CommandRegistry::CommandRegistry(Database& db) : database_(db) {
         for (int i = 0; i < 3; ++i) if (args.front() == choices[i]) player = i;
         if (player < 0) return Reply{"Выбери: камень, ножницы или бумага."};
         const int bot = random_int(0, 2);
-        const std::string result = player == bot ? "Ничья!" :
-            ((player - bot + 3) % 3 == 1 ? "Ты победил!" : "Победил бот.");
+        const int outcome = vkaether_rust_rps(player, bot);
+        const std::string result = outcome == 0 ? "Ничья!" :
+            (outcome == 1 ? "Ты победил!" : "Победил бот.");
         return Reply{"Ты: " + args.front() + "\nБот: " + choices[bot] + "\n" + result};
     });
 
