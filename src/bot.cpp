@@ -2,7 +2,6 @@
 #include "vkaether/logger.hpp"
 #include "native/validation.h"
 
-#include <climits>
 #include <random>
 extern "C" int aether_policy_validate_message(const unsigned char* data, int length);
 
