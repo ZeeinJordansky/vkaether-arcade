@@ -12,6 +12,7 @@
 
 extern "C" int vkaether_rust_add(std::int64_t a, std::int64_t b, std::int64_t* out);
 extern "C" int vkaether_rust_rps(int player, int bot);
+extern "C" int vkaether_rust_mul(std::int64_t a, std::int64_t b, std::int64_t* out);
 
 namespace vkaether {
 namespace {
@@ -216,16 +217,10 @@ CommandRegistry::CommandRegistry(Database& db) : database_(db) {
         std::int64_t a{}, b{};
         if (!parse_int(args[0], a) || !parse_int(args[1], b))
             return Reply{"❌ Укажи два целых числа."};
-        bool overflow = false;
-        if (a > 0) {
-            overflow = b > 0 ? a > std::numeric_limits<std::int64_t>::max() / b
-                             : b < std::numeric_limits<std::int64_t>::min() / a;
-        } else if (a < 0) {
-            overflow = b > 0 ? a < std::numeric_limits<std::int64_t>::min() / b
-                             : (b < 0 && a < std::numeric_limits<std::int64_t>::max() / b);
-        }
-        if (overflow) return Reply{"❌ Результат выходит за диапазон 64-битного целого числа."};
-        return Reply{"✖️ Результат: " + std::to_string(a * b)};
+        std::int64_t result{};
+        if (vkaether_rust_mul(a, b, &result) != 0)
+            return Reply{"❌ Результат выходит за диапазон 64-битного целого числа."};
+        return Reply{"✖️ Результат: " + std::to_string(result) + " (Rust core)."};
     });
     add("квадрат", [](const Message&, const auto& args) {
         if (args.size() != 1) return Reply{"Использование: квадрат число"};
