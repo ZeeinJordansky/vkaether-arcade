@@ -10,9 +10,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build libcurl4-openssl-dev libsqlite3-dev liblua5.4-dev
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build libcurl4-openssl-dev libsqlite3-dev liblua5.4-dev clang zlib1g-dev
+      - name: Install .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22.x'
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+      - name: Test Go supervisor
+        run: go test ./...
       - name: Test Rust module
         run: cargo test --manifest-path rust/Cargo.toml --release
       - name: Configure
