@@ -1,4 +1,5 @@
 #include "vkaether/commands.hpp"
+#include "vkaether/rust_ffi.h"
 
 #include <algorithm>
 #include <charconv>
@@ -10,9 +11,6 @@
 #include <string_view>
 #include <utility>
 
-extern "C" int vkaether_rust_add(std::int64_t a, std::int64_t b, std::int64_t* out);
-extern "C" int vkaether_rust_rps(int player, int bot);
-extern "C" int vkaether_rust_mul(std::int64_t a, std::int64_t b, std::int64_t* out);
 
 namespace vkaether {
 namespace {
