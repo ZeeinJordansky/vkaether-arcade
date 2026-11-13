@@ -1,4 +1,7 @@
 #include "vkaether/commands.hpp"
+#include "../src/native/validation.h"
+#include <cstdint>
+extern "C" int aether_policy_validate_message(const unsigned char* data, int length);
 
 #include <filesystem>
 #include <stdexcept>
@@ -22,6 +25,14 @@ int main() {
         vkaether::CommandRegistry commands(database);
 
         require(commands.size() >= 125, "expected at least 125 registered command names");
+        require(vkaether_valid_identity(2000000001, 42) == 1, "C identity validator rejected valid IDs");
+        require(vkaether_valid_identity(0, 42) == 0, "C identity validator accepted zero peer ID");
+        const unsigned char valid_message[] = {'h', 'i'};
+        const unsigned char invalid_message[] = {'h', 0, 'i'};
+        require(aether_policy_validate_message(valid_message, 2) == 0, "C# policy rejected valid UTF-8");
+        require(aether_policy_validate_message(invalid_message, 3) == 1, "C# policy accepted embedded NUL");
+        require(aether_policy_validate_message(valid_message, 4097) == 2, "C# policy accepted oversized input");
+
         require(commands.dispatch({1, 42, "помощь"}).text.find("Aether Arcade") != std::string::npos,
                 "help command did not return expected output");
 
