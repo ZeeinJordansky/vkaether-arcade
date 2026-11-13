@@ -2,6 +2,7 @@
 #include "../src/native/validation.h"
 #include <cstdint>
 extern "C" int aether_policy_validate_message(const unsigned char* data, int length);
+extern "C" int vkaether_rust_rps(int player, int bot);
 
 #include <filesystem>
 #include <stdexcept>
@@ -25,6 +26,10 @@ int main() {
         vkaether::CommandRegistry commands(database);
 
         require(commands.size() >= 125, "expected at least 125 registered command names");
+        require(vkaether_rust_rps(0, 0) == 0, "Rust RPS draw resolution failed");
+        require(vkaether_rust_rps(1, 0) == 1, "Rust RPS player win resolution failed");
+        require(vkaether_rust_rps(0, 1) == 2, "Rust RPS bot win resolution failed");
+        require(vkaether_rust_rps(9, 0) == -1, "Rust RPS accepted invalid choice");
         require(vkaether_valid_identity(2000000001, 42) == 1, "C identity validator rejected valid IDs");
         require(vkaether_valid_identity(0, 42) == 0, "C identity validator accepted zero peer ID");
         const unsigned char valid_message[] = {'h', 'i'};
