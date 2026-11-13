@@ -1,4 +1,5 @@
 #include "vkaether/commands.hpp"
+#include "vkaether/rust_ffi.h"
 
 #include <charconv>
 #include <cmath>
@@ -12,11 +13,6 @@
 #include <string_view>
 #include <utility>
 #include <vector>
-
-extern "C" int vkaether_rust_div_f64(std::int64_t, std::int64_t, double*);
-extern "C" int vkaether_rust_pow(std::int64_t, std::uint32_t, std::int64_t*);
-extern "C" int vkaether_rust_factorial(std::uint32_t, std::uint64_t*);
-extern "C" int vkaether_rust_is_prime(std::uint64_t);
 
 namespace vkaether {
 namespace {
