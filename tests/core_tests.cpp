@@ -1,13 +1,8 @@
 #include "vkaether/commands.hpp"
+#include "vkaether/rust_ffi.h"
+#include "aether_policy.h"
 #include "../src/native/validation.h"
 #include <cstdint>
-extern "C" int aether_policy_validate_message(const unsigned char* data, int length);
-extern "C" int vkaether_rust_rps(int player, int bot);
-extern "C" int vkaether_rust_mul(std::int64_t, std::int64_t, std::int64_t*);
-extern "C" int vkaether_rust_div(std::int64_t, std::int64_t, std::int64_t*);
-extern "C" int vkaether_rust_pow(std::int64_t, std::uint32_t, std::int64_t*);
-extern "C" int vkaether_rust_factorial(std::uint32_t, std::uint64_t*);
-extern "C" int vkaether_rust_is_prime(std::uint64_t);
 
 #include <filesystem>
 #include <stdexcept>
