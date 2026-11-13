@@ -3,6 +3,10 @@ project(vkaether_arcade VERSION 1.0.0 LANGUAGES C CXX)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64)$")
+  message(FATAL_ERROR "The current C# NativeAOT integration targets Linux x86-64 only.")
+endif()
+
 include(ExternalProject)
 find_program(CARGO_EXECUTABLE cargo REQUIRED)
 find_program(DOTNET_EXECUTABLE dotnet REQUIRED)
