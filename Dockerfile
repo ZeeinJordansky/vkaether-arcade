@@ -1,6 +1,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake ninja-build pkg-config libcurl4-openssl-dev libsqlite3-dev clang zlib1g-dev cargo rustc ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake ninja-build pkg-config libcurl4-openssl-dev libsqlite3-dev clang zlib1g-dev curl ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+ENV PATH="/root/.cargo/bin:${PATH}"
 WORKDIR /app
 COPY . .
 RUN cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DVKAETHER_BUILD_TESTS=OFF && cmake --build build --parallel 2
