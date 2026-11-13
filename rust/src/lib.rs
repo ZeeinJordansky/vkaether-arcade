@@ -88,6 +88,7 @@ mod tests {
         assert_eq!(vkaether_rust_factorial(21, &mut factorial), 4);
         assert_eq!(vkaether_rust_is_prime(97), 1);
         assert_eq!(vkaether_rust_is_prime(100), 0);
+        assert_eq!(vkaether_rust_is_prime(18_446_744_073_709_551_557), 1);
     }
 }
 
@@ -134,15 +135,48 @@ pub extern "C" fn vkaether_rust_factorial(n: u32, out: *mut u64) -> c_int {
     0
 }
 
-/// Deterministic primality predicate; returns 1 for prime, 0 otherwise.
+fn modular_multiply(a: u64, b: u64, modulus: u64) -> u64 {
+    ((u128::from(a) * u128::from(b)) % u128::from(modulus)) as u64
+}
+
+fn modular_power(mut base: u64, mut exponent: u64, modulus: u64) -> u64 {
+    let mut result = 1_u64;
+    base %= modulus;
+    while exponent > 0 {
+        if exponent & 1 == 1 {
+            result = modular_multiply(result, base, modulus);
+        }
+        base = modular_multiply(base, base, modulus);
+        exponent >>= 1;
+    }
+    result
+}
+
+/// Deterministic Miller-Rabin primality test for the full u64 domain.
+/// The seven bases below are sufficient for every unsigned 64-bit integer.
 #[no_mangle]
 pub extern "C" fn vkaether_rust_is_prime(n: u64) -> c_int {
     if n < 2 { return 0; }
-    if n % 2 == 0 { return if n == 2 { 1 } else { 0 }; }
-    let mut divisor = 3_u64;
-    while divisor <= n / divisor {
-        if n % divisor == 0 { return 0; }
-        divisor += 2;
+    const SMALL_PRIMES: [u64; 12] = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37];
+    for prime in SMALL_PRIMES {
+        if n == prime { return 1; }
+        if n % prime == 0 { return 0; }
+    }
+
+    let shifts = (n - 1).trailing_zeros();
+    let odd_part = (n - 1) >> shifts;
+    const BASES: [u64; 7] = [2, 325, 9_375, 28_178, 450_775, 9_780_504, 1_795_265_022];
+
+    'witness: for base in BASES {
+        let base = base % n;
+        if base == 0 { continue; }
+        let mut value = modular_power(base, odd_part, n);
+        if value == 1 || value == n - 1 { continue; }
+        for _ in 1..shifts {
+            value = modular_multiply(value, value, n);
+            if value == n - 1 { continue 'witness; }
+        }
+        return 0;
     }
     1
 }
