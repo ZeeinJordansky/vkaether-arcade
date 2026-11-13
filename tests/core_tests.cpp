@@ -34,7 +34,9 @@ int main() {
         require(vkaether_valid_identity(0, 42) == 0, "C identity validator accepted zero peer ID");
         const unsigned char valid_message[] = {'h', 'i'};
         const unsigned char invalid_message[] = {'h', 0, 'i'};
+        const unsigned char invalid_utf8[] = {0xff};
         require(aether_policy_validate_message(valid_message, 2) == 0, "C# policy rejected valid UTF-8");
+        require(aether_policy_validate_message(invalid_utf8, 1) == 1, "C# policy accepted invalid UTF-8");
         require(aether_policy_validate_message(invalid_message, 3) == 1, "C# policy accepted embedded NUL");
         require(aether_policy_validate_message(valid_message, 4097) == 2, "C# policy accepted oversized input");
 
