@@ -70,6 +70,25 @@ mod tests {
     fn rejects_null_output() {
         assert_eq!(vkaether_rust_add(1, 2, std::ptr::null_mut()), 1);
     }
+
+    #[test]
+    fn checked_game_math_handles_boundaries() {
+        let mut value = 0_i64;
+        assert_eq!(vkaether_rust_mul(6, 7, &mut value), 0);
+        assert_eq!(value, 42);
+        assert_eq!(vkaether_rust_mul(i64::MAX, 2, &mut value), 2);
+        assert_eq!(vkaether_rust_div(10, 0, &mut value), 2);
+        assert_eq!(vkaether_rust_div(i64::MIN, -1, &mut value), 3);
+        assert_eq!(vkaether_rust_pow(3, 4, &mut value), 0);
+        assert_eq!(value, 81);
+
+        let mut factorial = 0_u64;
+        assert_eq!(vkaether_rust_factorial(20, &mut factorial), 0);
+        assert_eq!(factorial, 2_432_902_008_176_640_000);
+        assert_eq!(vkaether_rust_factorial(21, &mut factorial), 4);
+        assert_eq!(vkaether_rust_is_prime(97), 1);
+        assert_eq!(vkaether_rust_is_prime(100), 0);
+    }
 }
 
 /// Checked multiplication. Status: 0=success, 1=null output, 2=overflow.
