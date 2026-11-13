@@ -11,7 +11,6 @@
 | C11 | Проверка VK peer/user ID на входе событий | Встроенный native-модуль |
 | C# / .NET 8 NativeAOT | Проверка UTF-8, управляющих символов и размера входящих сообщений | Native shared library, C ABI |
 | Go | Запуск процесса бота, graceful shutdown, HTTP health endpoints | Production supervisor |
-| Lua 5.4 | Пользовательские игровые выражения | Изолированное состояние с лимитом памяти и инструкций |
 
 Языки не дублируют одну и ту же работу и не образуют пять сетевых микросервисов. VK-событие проходит проверку C и C# в процессе, затем поступает в C++ dispatcher; Rust вызывается через C ABI для вычислительных операций. Go управляет жизненным циклом native-процесса и предоставляет health endpoints. Это сохраняет короткий путь обработки сообщений без лишних сетевых hops.
 
@@ -26,7 +25,7 @@
 - Rust stable + Cargo;
 - Go 1.22+;
 - .NET 8 SDK, clang и zlib development headers для NativeAOT;
-- Lua 5.4 development headers, libcurl и SQLite3.
+- libcurl и SQLite3.
 
 ```bash
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
@@ -40,10 +39,9 @@ go run ./cmd/aetherd -binary ./build/vkaether -config ./config.json -listen :808
 
 При первой конфигурации CMake загружает nlohmann/json. В настройках сообщества включите Group Long Poll API и выдайте токену право отправки сообщений. `group_id` — положительный числовой ID сообщества без знака минус. `config.json` исключён из Git; база автоматически создаётся в каталоге `data/`.
 
-## Использование языковых модулей
+## Использование пяти языков
 
 - Rust: `rsum 12 30` — сложение через Rust C ABI с защитой от переполнения.
-- Lua: `lua return 6 * 7` — выполнение выражения в отдельном sandbox-состоянии.
 - C и C#: проверяют идентификаторы и входящий текст до передачи события игровому dispatcher.
 - Go: `/healthz` и `/readyz` возвращают HTTP 200, пока процесс бота работает, и HTTP 503 после его завершения.
 
