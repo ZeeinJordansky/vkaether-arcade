@@ -7,7 +7,7 @@
 | Язык | Зона ответственности | Связь с приложением |
 |---|---|---|
 | C++20 | VK API, Long Poll, worker pool, команды и игровая логика | Основной native runtime |
-| Rust | Вычислительные и доменные примитивы с проверкой переполнения | Статическая библиотека, C ABI |
+| Rust | Вычислительные и игровые правила, включая RPS | Статическая библиотека, C ABI |
 | C11 | Проверка VK peer/user ID на входе событий | Встроенный native-модуль |
 | C# / .NET 8 NativeAOT | Проверка UTF-8, управляющих символов и размера входящих сообщений | Native shared library, C ABI |
 | Go | Запуск процесса бота, graceful shutdown, HTTP health endpoints | Production supervisor |
