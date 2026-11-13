@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build libcurl4-openssl-dev libsqlite3-dev liblua5.4-dev clang zlib1g-dev
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build libcurl4-openssl-dev libsqlite3-dev clang zlib1g-dev
       - name: Install .NET 8
         uses: actions/setup-dotnet@v4
         with:
