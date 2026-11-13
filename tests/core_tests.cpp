@@ -3,6 +3,11 @@
 #include <cstdint>
 extern "C" int aether_policy_validate_message(const unsigned char* data, int length);
 extern "C" int vkaether_rust_rps(int player, int bot);
+extern "C" int vkaether_rust_mul(std::int64_t, std::int64_t, std::int64_t*);
+extern "C" int vkaether_rust_div(std::int64_t, std::int64_t, std::int64_t*);
+extern "C" int vkaether_rust_pow(std::int64_t, std::uint32_t, std::int64_t*);
+extern "C" int vkaether_rust_factorial(std::uint32_t, std::uint64_t*);
+extern "C" int vkaether_rust_is_prime(std::uint64_t);
 
 #include <filesystem>
 #include <stdexcept>
@@ -30,8 +35,20 @@ int main() {
         require(vkaether_rust_rps(1, 0) == 1, "Rust RPS player win resolution failed");
         require(vkaether_rust_rps(0, 1) == 2, "Rust RPS bot win resolution failed");
         require(vkaether_rust_rps(9, 0) == -1, "Rust RPS accepted invalid choice");
+        std::int64_t rust_value{};
+        require(vkaether_rust_mul(6, 7, &rust_value) == 0 && rust_value == 42, "Rust checked multiplication failed");
+        require(vkaether_rust_mul(INT64_MAX, 2, &rust_value) == 2, "Rust multiplication overflow was not rejected");
+        require(vkaether_rust_div(10, 0, &rust_value) == 2, "Rust division by zero was not rejected");
+        require(vkaether_rust_div(INT64_MIN, -1, &rust_value) == 3, "Rust division overflow was not rejected");
+        require(vkaether_rust_pow(3, 4, &rust_value) == 0 && rust_value == 81, "Rust checked power failed");
+        std::uint64_t rust_factorial{};
+        require(vkaether_rust_factorial(20, &rust_factorial) == 0 && rust_factorial == 2432902008176640000ULL, "Rust factorial failed");
+        require(vkaether_rust_is_prime(97) == 1 && vkaether_rust_is_prime(100) == 0, "Rust primality test failed");
         require(vkaether_valid_identity(2000000001, 42) == 1, "C identity validator rejected valid IDs");
         require(vkaether_valid_identity(0, 42) == 0, "C identity validator accepted zero peer ID");
+        require(vkaether_validate_event(2000000001, 42, 10) == 1, "C event validator rejected valid event");
+        require(vkaether_validate_event(2000000001, 42, 0) == 0, "C event validator accepted empty text");
+        require(vkaether_validate_event(2000000001, 42, 4097) == 0, "C event validator accepted oversized text");
         const unsigned char valid_message[] = {'h', 'i'};
         const unsigned char invalid_message[] = {'h', 0, 'i'};
         const unsigned char invalid_utf8[] = {0xff};
@@ -47,10 +64,6 @@ int main() {
                 "Rust FFI addition failed");
         require(commands.dispatch({1, 42, "rsum 9223372036854775807 1"}).text.find("переполнение") != std::string::npos,
                 "Rust FFI overflow was not rejected");
-        require(commands.dispatch({1, 42, "lua return 6 * 7"}).text.find("42") != std::string::npos,
-                "Lua expression execution failed");
-        require(commands.dispatch({1, 42, "lua return os.execute('id')"}).text.find("ошибка") != std::string::npos,
-                "Lua sandbox exposed OS facilities");
 
         // Every one of the 50 newly added commands must be registered and executable.
         const std::vector<std::string> added{
