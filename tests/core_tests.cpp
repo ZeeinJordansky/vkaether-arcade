@@ -47,10 +47,12 @@ int main() {
         const unsigned char valid_message[] = {'h', 'i'};
         const unsigned char invalid_message[] = {'h', 0, 'i'};
         const unsigned char invalid_utf8[] = {0xff};
+        const std::vector<unsigned char> oversized_message(4097, static_cast<unsigned char>('x'));
         require(aether_policy_validate_message(valid_message, 2) == 0, "C# policy rejected valid UTF-8");
         require(aether_policy_validate_message(invalid_utf8, 1) == 1, "C# policy accepted invalid UTF-8");
         require(aether_policy_validate_message(invalid_message, 3) == 1, "C# policy accepted embedded NUL");
-        require(aether_policy_validate_message(valid_message, 4097) == 2, "C# policy accepted oversized input");
+        require(aether_policy_validate_message(oversized_message.data(), static_cast<int>(oversized_message.size())) == 2, "C# policy accepted oversized input");
+        require(aether_policy_validate_message(nullptr, 0) == 2, "C# policy accepted a null pointer");
 
         require(commands.dispatch({1, 42, "помощь"}).text.find("Aether Arcade") != std::string::npos,
                 "help command did not return expected output");
@@ -75,6 +77,8 @@ int main() {
             require(!reply.text.empty(), ("command returned empty reply: " + name).c_str());
         }
 
+        require(commands.dispatch({1, 42, "делить 5 2"}).text.find("2.5") != std::string::npos,
+                "Rust floating-point division failed");
         require(commands.dispatch({1, 42, "делить 10 0"}).text.find("ноль") != std::string::npos,
                 "division by zero was not rejected");
         require(commands.dispatch({1, 42, "остаток -9223372036854775808 -1"}).text.find("0") != std::string::npos,
