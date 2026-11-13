@@ -119,7 +119,7 @@ pub extern "C" fn vkaether_rust_factorial(n: u32, out: *mut u64) -> c_int {
 #[no_mangle]
 pub extern "C" fn vkaether_rust_is_prime(n: u64) -> c_int {
     if n < 2 { return 0; }
-    if n % 2 == 0 { return i32::from(n == 2); }
+    if n % 2 == 0 { return if n == 2 { 1 } else { 0 }; }
     let mut divisor = 3_u64;
     while divisor <= n / divisor {
         if n % divisor == 0 { return 0; }
