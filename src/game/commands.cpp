@@ -151,7 +151,7 @@ CommandRegistry::CommandRegistry(Database& db) : database_(db) {
     });
     add("rps", [](const Message&, const auto& args) {
         if (args.empty()) return Reply{"Использование: rps камень|ножницы|бумага"};
-        static constexpr const char* choices[]{"камень", "ножницы", "бумага"};
+        static constexpr const char* choices[]{"камень", "бумага", "ножницы"};
         int player = -1;
         for (int i = 0; i < 3; ++i) if (args.front() == choices[i]) player = i;
         if (player < 0) return Reply{"Выбери: камень, ножницы или бумага."};
