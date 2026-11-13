@@ -5,7 +5,7 @@ Aether Arcade is built as one application with explicit language boundaries:
 | Language | Responsibility | Integration |
 |---|---|---|
 | C++20 | VK Long Poll, command dispatch, worker pool, game orchestration | Main native executable |
-| Rust | Checked arithmetic and future CPU-heavy domain modules | Static library, stable C ABI |
+| Rust | Checked arithmetic and rock-paper-scissors game rules | Static library, stable C ABI |
 | C11 | Tiny low-level ingress/identity primitives | Compiled into the C++ core |
 | C# / .NET 8 NativeAOT | UTF-8 and message-ingress policy validation | Native shared library, stable C ABI |
 | Go | Process supervision, graceful shutdown, health endpoints | Production entrypoint |
@@ -31,4 +31,4 @@ SIGINT/SIGTERM and gives the bot up to ten seconds to stop gracefully.
 - C identity validation rejects non-positive VK peer/user IDs before queue submission.
 - C# policy validation rejects invalid UTF-8, embedded NUL/control characters and
   payloads over 4096 bytes before the C++ command dispatcher sees them.
-- Rust arithmetic returns explicit status codes for null output pointers and overflow.
+- Rust arithmetic returns explicit status codes for null output pointers and overflow; the RPS rules are also implemented and unit-tested in Rust.
