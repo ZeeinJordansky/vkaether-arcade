@@ -28,7 +28,7 @@ SIGINT/SIGTERM and gives the bot up to ten seconds to stop gracefully.
 
 ## Native boundaries
 
-- C identity validation rejects non-positive VK peer/user IDs before queue submission.
+- C event validation rejects non-positive VK peer/user IDs, empty payloads and payloads larger than 4096 bytes before queue submission.
 - C# policy validation rejects invalid UTF-8, embedded NUL/control characters and
   payloads over 4096 bytes before the C++ command dispatcher sees them.
-- Rust arithmetic returns explicit status codes for null output pointers and overflow; the RPS rules are also implemented and unit-tested in Rust.
+- Rust arithmetic/game functions return explicit status codes for null output pointers, invalid domains, division by zero and overflow; the command layer calls these functions directly, and the FFI boundaries are covered by Rust and C++ tests.
