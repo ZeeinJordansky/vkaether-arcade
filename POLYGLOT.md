@@ -18,7 +18,7 @@ microservice deployment for components that do not need independent scaling.
 ## Build prerequisites
 
 CMake 3.24+, C11/C++20 compilers, Rust stable, Go 1.22+, .NET 8 SDK with NativeAOT
-toolchain, Lua 5.4 development files, libcurl and SQLite3.
+toolchain, libcurl and SQLite3.
 
 ## Health
 
