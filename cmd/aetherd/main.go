@@ -38,6 +38,7 @@ func main() {
 
 	var alive atomic.Bool
 	var ready atomic.Bool
+	var childExited atomic.Bool
 	alive.Store(true)
 	ready.Store(true)
 	exited := make(chan error, 1)
@@ -45,6 +46,7 @@ func main() {
 		err := cmd.Wait()
 		alive.Store(false)
 		ready.Store(false)
+		childExited.Store(true)
 		exited <- err
 	}()
 
@@ -66,6 +68,7 @@ func main() {
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(signals)
 	select {
 	case sig := <-signals:
 		log.Printf("received %s; stopping bot", sig)
@@ -79,8 +82,10 @@ func main() {
 		log.Printf("health server failed: %v", err)
 	}
 
-	_ = server.Shutdown(context.Background())
-	if cmd.ProcessState == nil {
+	shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 5*time.Second)
+	_ = server.Shutdown(shutdownCtx)
+	cancelShutdown()
+	if !childExited.Load() {
 		ready.Store(false)
 		_ = cmd.Process.Signal(syscall.SIGTERM)
 		select {
