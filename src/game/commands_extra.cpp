@@ -13,6 +13,11 @@
 #include <utility>
 #include <vector>
 
+extern "C" int vkaether_rust_div(std::int64_t, std::int64_t, std::int64_t*);
+extern "C" int vkaether_rust_pow(std::int64_t, std::uint32_t, std::int64_t*);
+extern "C" int vkaether_rust_factorial(std::uint32_t, std::uint64_t*);
+extern "C" int vkaether_rust_is_prime(std::uint64_t);
+
 namespace vkaether {
 namespace {
 
@@ -136,12 +141,11 @@ void CommandRegistry::register_extended_commands() {
         std::int64_t a{}, b{};
         if (!parse_int(args[0], a) || !parse_int(args[1], b))
             return Reply{"❌ Укажи два целых числа."};
-        if (b == 0) return Reply{"❌ На ноль делить нельзя."};
-        std::ostringstream out;
-        out.precision(10);
-        out << "➗ " << a << " / " << b << " = "
-            << static_cast<long double>(a) / static_cast<long double>(b);
-        return Reply{out.str()};
+        std::int64_t quotient{};
+        const int status = vkaether_rust_div(a, b, &quotient);
+        if (status == 2) return Reply{"❌ На ноль делить нельзя."};
+        if (status != 0) return Reply{"❌ Результат деления выходит за диапазон 64-битного целого числа."};
+        return Reply{"➗ Целочисленное деление: " + std::to_string(quotient) + " (Rust core)."};
     });
     add("остаток", [](const Message&, const auto& args) {
         if (args.size() != 2) return Reply{"Использование: остаток [число] [делитель]"};
@@ -157,32 +161,29 @@ void CommandRegistry::register_extended_commands() {
         std::int64_t base{}, exponent{};
         if (!parse_int(args[0], base) || !parse_int(args[1], exponent) || exponent < 0 || exponent > 63)
             return Reply{"❌ Основание должно быть целым, показатель — от 0 до 63."};
-        long double result = 1;
-        for (std::int64_t i = 0; i < exponent; ++i) result *= static_cast<long double>(base);
-        const long double signed_limit = std::ldexp(1.0L, 63);
-        if (!std::isfinite(result) || result >= signed_limit || result < -signed_limit)
-            return Reply{"❌ Результат выходит за диапазон 64-битного целого числа."};
-        std::ostringstream out;
-        out << "🔢 " << base << "^" << exponent << " = " << static_cast<std::int64_t>(result);
-        return Reply{out.str()};
+        std::int64_t result{};
+        const int status = vkaether_rust_pow(base, static_cast<std::uint32_t>(exponent), &result);
+        if (status != 0) return Reply{"❌ Результат выходит за диапазон 64-битного целого числа."};
+        return Reply{"🔢 " + std::to_string(base) + "^" + std::to_string(exponent) +
+                     " = " + std::to_string(result) + " (Rust core)."};
     });
     add("факториал", [](const Message&, const auto& args) {
         if (args.size() != 1) return Reply{"Использование: факториал [число от 0 до 20]"};
         std::int64_t n{};
         if (!parse_int(args[0], n) || n < 0 || n > 20)
             return Reply{"❌ Факториал поддерживает целые числа от 0 до 20."};
-        std::uint64_t result = 1;
-        for (std::uint64_t i = 2; i <= static_cast<std::uint64_t>(n); ++i) result *= i;
-        return Reply{"🔢 " + std::to_string(n) + "! = " + std::to_string(result)};
+        std::uint64_t result{};
+        if (vkaether_rust_factorial(static_cast<std::uint32_t>(n), &result) != 0)
+            return Reply{"❌ Не удалось вычислить факториал."};
+        return Reply{"🔢 " + std::to_string(n) + "! = " + std::to_string(result) + " (Rust core)."};
     });
     add("простое", [](const Message&, const auto& args) {
         if (args.size() != 1) return Reply{"Использование: простое [число]"};
         std::int64_t n{};
         if (!parse_int(args[0], n) || n < 0) return Reply{"❌ Укажи неотрицательное целое число."};
-        bool prime = n >= 2;
-        for (std::int64_t divisor = 2; prime && divisor <= n / divisor; ++divisor)
-            if (n % divisor == 0) prime = false;
-        return Reply{prime ? "✅ Число простое." : "❌ Число не является простым."};
+        const bool prime = vkaether_rust_is_prime(static_cast<std::uint64_t>(n)) == 1;
+        return Reply{prime ? "✅ Число простое (проверено Rust core)." :
+                              "❌ Число не является простым (проверено Rust core)."};
     });
     add("четное", [](const Message&, const auto& args) {
         if (args.size() != 1) return Reply{"Использование: четное [число]"};
