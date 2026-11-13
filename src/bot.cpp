@@ -1,9 +1,9 @@
 #include "vkaether/bot.hpp"
 #include "vkaether/logger.hpp"
 #include "native/validation.h"
+#include "aether_policy.h"
 
 #include <random>
-extern "C" int aether_policy_validate_message(const unsigned char* data, int length);
 
 namespace vkaether {
 Bot::Bot(Config c):config_(std::move(c)),database_(config_.database_path),api_(config_.vk_token,config_.api_version),long_poll_(api_,config_.group_id),commands_(database_),workers_(config_.worker_threads){Logger::write(LogLevel::info,"Aether Arcade ready; commands="+std::to_string(commands_.size()));}
