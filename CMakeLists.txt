@@ -25,6 +25,7 @@ ExternalProject_Add(vkaether_rust_build
   INSTALL_COMMAND ""
   BUILD_BYPRODUCTS "${RUST_STATIC_LIBRARY}"
   UPDATE_COMMAND ""
+  BUILD_ALWAYS TRUE
 )
 add_library(vkaether_rust STATIC IMPORTED GLOBAL)
 set_target_properties(vkaether_rust PROPERTIES IMPORTED_LOCATION "${RUST_STATIC_LIBRARY}")
