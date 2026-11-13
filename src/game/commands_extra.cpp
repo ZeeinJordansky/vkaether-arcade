@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 
-extern "C" int vkaether_rust_div(std::int64_t, std::int64_t, std::int64_t*);
+extern "C" int vkaether_rust_div_f64(std::int64_t, std::int64_t, double*);
 extern "C" int vkaether_rust_pow(std::int64_t, std::uint32_t, std::int64_t*);
 extern "C" int vkaether_rust_factorial(std::uint32_t, std::uint64_t*);
 extern "C" int vkaether_rust_is_prime(std::uint64_t);
@@ -141,11 +141,14 @@ void CommandRegistry::register_extended_commands() {
         std::int64_t a{}, b{};
         if (!parse_int(args[0], a) || !parse_int(args[1], b))
             return Reply{"❌ Укажи два целых числа."};
-        std::int64_t quotient{};
-        const int status = vkaether_rust_div(a, b, &quotient);
+        double quotient{};
+        const int status = vkaether_rust_div_f64(a, b, &quotient);
         if (status == 2) return Reply{"❌ На ноль делить нельзя."};
-        if (status != 0) return Reply{"❌ Результат деления выходит за диапазон 64-битного целого числа."};
-        return Reply{"➗ Целочисленное деление: " + std::to_string(quotient) + " (Rust core)."};
+        if (status != 0) return Reply{"❌ Не удалось выполнить деление."};
+        std::ostringstream out;
+        out.precision(10);
+        out << "➗ " << a << " / " << b << " = " << quotient << " (Rust core).";
+        return Reply{out.str()};
     });
     add("остаток", [](const Message&, const auto& args) {
         if (args.size() != 2) return Reply{"Использование: остаток [число] [делитель]"};
