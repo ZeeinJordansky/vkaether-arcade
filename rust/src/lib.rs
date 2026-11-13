@@ -146,3 +146,12 @@ pub extern "C" fn vkaether_rust_is_prime(n: u64) -> c_int {
     }
     1
 }
+
+/// Floating-point division for game/statistics commands. Status: 0=success, 1=null output, 2=zero divisor.
+#[no_mangle]
+pub extern "C" fn vkaether_rust_div_f64(a: i64, b: i64, out: *mut f64) -> c_int {
+    if out.is_null() { return 1; }
+    if b == 0 { return 2; }
+    unsafe { out.write(a as f64 / b as f64) };
+    0
+}
