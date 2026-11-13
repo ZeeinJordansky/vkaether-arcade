@@ -39,7 +39,7 @@ add_custom_command(
           --configuration Release --runtime linux-x64 --self-contained true
           --output "${AETHER_POLICY_DIR}"
           -p:NativeLib=Shared -p:PublishAot=true
-  DEPENDS native/AetherPolicy/AetherPolicy.csproj native/AetherPolicy/Policy.cs
+  DEPENDS native/AetherPolicy/AetherPolicy.csproj native/AetherPolicy/Policy.cs native/AetherPolicy/aether_policy.h
   VERBATIM
 )
 add_custom_target(aether_policy_build DEPENDS "${AETHER_POLICY_LIBRARY}")
@@ -58,7 +58,7 @@ FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download
 FetchContent_MakeAvailable(json)
 add_library(vkaether_core src/core/config.cpp src/core/logger.cpp src/core/thread_pool.cpp src/game/database.cpp src/game/commands.cpp src/game/commands_extra.cpp src/native/validation.c src/vk/api.cpp src/vk/long_poll.cpp src/bot.cpp)
 add_dependencies(vkaether_core vkaether_rust_build aether_policy_build)
-target_include_directories(vkaether_core PUBLIC include)
+target_include_directories(vkaether_core PUBLIC include native/AetherPolicy)
 target_link_libraries(vkaether_core PUBLIC CURL::libcurl SQLite::SQLite3 nlohmann_json::nlohmann_json vkaether_rust aether_policy)
 if(UNIX AND NOT APPLE)
   target_link_libraries(vkaether_core PUBLIC dl m rt util)
