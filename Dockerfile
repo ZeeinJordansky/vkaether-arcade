@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake ninja-build pkg-config libcurl4-openssl-dev libsqlite3-dev liblua5.4-dev clang zlib1g-dev cargo rustc ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake ninja-build pkg-config libcurl4-openssl-dev libsqlite3-dev clang zlib1g-dev cargo rustc ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY . .
 RUN cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DVKAETHER_BUILD_TESTS=OFF && cmake --build build --parallel 2
@@ -12,7 +12,7 @@ COPY cmd ./cmd
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/aetherd ./cmd/aetherd
 
 FROM ubuntu:24.04
-RUN apt-get update && apt-get install -y --no-install-recommends libcurl4 libsqlite3-0 liblua5.4-0 libstdc++6 libgcc-s1 ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends libcurl4 libsqlite3-0 libstdc++6 libgcc-s1 ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app/build/vkaether /usr/local/bin/vkaether
 COPY --from=build /app/build/csharp/libAetherPolicy.so /usr/local/lib/libAetherPolicy.so
