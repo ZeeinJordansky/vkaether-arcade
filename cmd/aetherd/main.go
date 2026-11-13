@@ -37,26 +37,20 @@ func main() {
 	}
 
 	var alive atomic.Bool
+	var ready atomic.Bool
 	alive.Store(true)
+	ready.Store(true)
 	exited := make(chan error, 1)
 	go func() {
 		err := cmd.Wait()
 		alive.Store(false)
+		ready.Store(false)
 		exited <- err
 	}()
 
 	mux := http.NewServeMux()
-	health := func(w http.ResponseWriter, _ *http.Request) {
-		if !alive.Load() {
-			http.Error(w, "bot process is not running", http.StatusServiceUnavailable)
-			return
-		}
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-		_, _ = fmt.Fprintln(w, "ok")
-	}
-	mux.HandleFunc("/healthz", health)
-	mux.HandleFunc("/readyz", health)
+	mux.HandleFunc("/healthz", processHealthHandler(&alive))
+	mux.HandleFunc("/readyz", readinessHandler(&alive, &ready))
 	server := &http.Server{
 		Addr: *listen, Handler: mux,
 		ReadHeaderTimeout: 3 * time.Second,
@@ -87,12 +81,41 @@ func main() {
 
 	_ = server.Shutdown(context.Background())
 	if cmd.ProcessState == nil {
-		_ = cmd.Process.Signal(os.Interrupt)
+		ready.Store(false)
+		_ = cmd.Process.Signal(syscall.SIGTERM)
 		select {
 		case <-exited:
 		case <-time.After(10 * time.Second):
 			_ = cmd.Process.Kill()
 			<-exited
 		}
+	}
+}
+
+
+// processHealthHandler reports whether the supervised native process is alive.
+func processHealthHandler(alive *atomic.Bool) http.HandlerFunc {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		if !alive.Load() {
+			http.Error(w, "bot process is not running", http.StatusServiceUnavailable)
+			return
+		}
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintln(w, "ok")
+	}
+}
+
+// readinessHandler is stricter than liveness: the child must have started and
+// must not have entered shutdown.
+func readinessHandler(alive, ready *atomic.Bool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !alive.Load() || !ready.Load() {
+			http.Error(w, "bot process is not ready", http.StatusServiceUnavailable)
+			return
+		}
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintln(w, "ready")
 	}
 }
