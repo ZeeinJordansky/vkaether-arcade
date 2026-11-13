@@ -1,10 +1,13 @@
 # Aether Arcade
 
-Игровой VK-бот на C++20, Rust и Lua с Group Long Poll, worker pool и SQLite WAL.
+Игровой VK-бот на Rust, C++20, C11, C# NativeAOT и Go с Group Long Poll, worker pool и SQLite WAL.
 
 ## Архитектура
 - C++20 — основной runtime, VK API, worker pool и игровая логика.
 - Rust — нативные вычислительные модули через стабильный C ABI; отдельная release-сборка с LTO.
+- C11 — проверка идентификаторов на входе событий VK.
+- C# / .NET 8 NativeAOT — проверка UTF-8, управляющих символов и размера входящих сообщений через C ABI.
+- Go — production supervisor, graceful shutdown и HTTP endpoints `/healthz` и `/readyz`.
 - Lua 5.4 — ограниченный скриптовый слой для игровых выражений; файловый, системный, пакетный и debug API недоступны.
 - Release-оптимизации и LTO при поддержке компилятора.
 - VK Group Long Poll: события поступают через long polling.
@@ -15,7 +18,7 @@
 - CMake, Docker Compose и GitHub Actions.
 
 ## Сборка
-Требования: CMake 3.24+, компилятор C++20, Rust stable/Cargo, Lua 5.4 development headers, libcurl и SQLite3. При первой конфигурации CMake загружает nlohmann/json.
+Требования: CMake 3.24+, компиляторы C11/C++20, Rust stable/Cargo, Go 1.22+, .NET 8 SDK с NativeAOT toolchain, Lua 5.4 development headers, libcurl и SQLite3. При первой конфигурации CMake загружает nlohmann/json.
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
@@ -26,7 +29,7 @@ cp config.example.json config.json
 ./build/vkaether config.json
 ```
 
-Windows: Visual Studio 2022 с компонентами C++ и CMake. Выполните configure/build через CMake, затем запустите build/Release/vkaether.exe config.json.
+Linux — основной production target полиглотной сборки. NativeAOT policy-модуль в текущем CMake-профиле собирается для linux-x64.
 
 В настройках сообщества включите Long Poll API и выдайте токену право отправки сообщений. group_id — положительный числовой ID сообщества без знака минус. config.json исключён из Git; база автоматически создаётся в каталоге data/.
 
