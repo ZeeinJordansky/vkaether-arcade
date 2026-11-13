@@ -1,5 +1,4 @@
 #include "vkaether/commands.hpp"
-#include "lua_runtime.hpp"
 
 #include <algorithm>
 #include <charconv>
@@ -74,7 +73,7 @@ CommandRegistry::CommandRegistry(Database& db) : database_(db) {
             "Экономика: профиль, баланс, бонус, работа, топ, передать [ID] [сумма]\n"
             "Игры: монетка, кубик, rps, число, шанс, выбрать, угадай, дуэль, рыбалка, охота, шахта\n"
             "Мини-игры: казино, слоты, рулетка, дартс, баскетбол, футбол, боулинг, лотерея, битва, босс\n"
-            "Утилиты: эхо, длина, сумма, умножить, квадрат, корень, кто, рандом, rsum [a] [b], lua [код]\n"
+            "Утилиты: эхо, длина, сумма, умножить, квадрат, корень, кто, рандом, rsum [a] [b]\n"
             "Развлечения: предсказание, гороскоп, анекдот, факт, комплимент, настроение, совет\n"
             "Команды принимают префиксы / . ! ; : или вводятся без них."
         };
@@ -330,18 +329,6 @@ CommandRegistry::CommandRegistry(Database& db) : database_(db) {
         if (status != 0) return Reply{"⚠️ Rust-модуль вернул ошибку."};
         return Reply{"🦀 Rust sum: " + std::to_string(result)};
     });
-
-    // Lua provides a small, sandboxed scripting surface for custom expressions.
-    add("lua", [](const Message&, const auto& args) {
-        if (args.empty()) return Reply{"Использование: lua return 6 * 7"};
-        std::string source;
-        for (const auto& part : args) {
-            if (!source.empty()) source += ' ';
-            source += part;
-        }
-        return Reply{"🌙 Lua: " + execute_lua(source)};
-    });
-
 
     register_extended_commands();
 
